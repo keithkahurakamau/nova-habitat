@@ -163,6 +163,12 @@
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
+    /* ---- WebGL artifact layers ---- */
+    .fx-fixed { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; display: block; }
+    .fx { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; display: block; border-radius: inherit; }
+    .has-fx { position: relative; }
+    .cta-band > h2, .cta-band > p, .cta-band > .cta { position: relative; z-index: 1; }
+
     h1, h2, h3, .display { font-family: 'Fraunces', Georgia, serif; font-weight: 600; letter-spacing: -0.01em; }
 
     .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 2; }
@@ -313,7 +319,7 @@
     .ic-clay  { background: rgba(176,106,60,.16); color: var(--clay); }
 
     /* ===================== CAPABILITIES ===================== */
-    .cap-section { background: var(--bark); color: #ece3d3; border-radius: 34px; margin: 0 24px; }
+    .cap-section { background: var(--bark); color: #ece3d3; border-radius: 34px; margin: 0 24px; position: relative; overflow: hidden; }
     .cap-section .wrap { padding-top: 88px; padding-bottom: 88px; }
     .cap-section .head h2 { color: #fbf6ec; }
     .cap-section .head p { color: #c4b6a1; }
@@ -383,7 +389,7 @@
     .cta-band .cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; position: relative; }
 
     /* ===================== FOOTER ===================== */
-    footer { background: var(--bark); color: #c9bca7; padding: 72px 0 32px; margin-top: 96px; }
+    footer { background: var(--bark); color: #c9bca7; padding: 72px 0 32px; margin-top: 96px; position: relative; overflow: hidden; }
     .foot-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 48px; border-bottom: 1px solid rgba(255,255,255,.1); }
     .foot-grid .logo { color: #fbf6ec; margin-bottom: 16px; }
     .foot-brand p { font-size: 14px; max-width: 34ch; line-height: 1.6; }
@@ -442,9 +448,13 @@
     </div>
   </header>
 
+  <!-- Global flowing gradient-mesh background (WebGL) -->
+  <canvas class="fx-fixed" data-fx="mesh" aria-hidden="true"></canvas>
+
   <main id="top">
     <!-- ===================== HERO ===================== -->
     <section class="hero">
+      <canvas class="fx" data-fx="leaves" aria-hidden="true"></canvas>
       <div class="wrap hero-grid">
         <div>
           <span class="eyebrow reveal-up d1"><span class="pulse"></span>Cloud business software · Made in Kenya 🇰🇪</span>
@@ -609,6 +619,7 @@
 
     <!-- ===================== CAPABILITIES ===================== -->
     <div class="cap-section" id="capabilities">
+      <canvas class="fx" data-fx="aurora" aria-hidden="true"></canvas>
       <div class="wrap">
         <div class="head center obs">
           <span class="eyebrow">Everything in the box</span>
@@ -653,7 +664,8 @@
     </div>
 
     <!-- ===================== ANALYTICS FEATURE ===================== -->
-    <section class="block" id="analytics">
+    <section class="block has-fx" id="analytics">
+      <canvas class="fx" data-fx="plexus" aria-hidden="true"></canvas>
       <div class="wrap split">
         <div class="obs">
           <span class="eyebrow">Analytics that pay for themselves</span>
@@ -781,6 +793,7 @@
     <section class="block" style="padding-top:0">
       <div class="wrap">
         <div class="cta-band obs">
+          <canvas class="fx" data-fx="aurora" aria-hidden="true"></canvas>
           <h2>Ready to see your business <span class="accent" style="color:#e7b894">in real time?</span></h2>
           <p>Book a free 30-minute demo. We'll map your counters, payments and reports to a Nova-Habitat setup that fits — no obligation.</p>
           <div class="cta">
@@ -794,6 +807,7 @@
 
   <!-- ===================== FOOTER ===================== -->
   <footer>
+    <canvas class="fx" data-fx="aurora" aria-hidden="true"></canvas>
     <div class="wrap">
       <div class="foot-grid">
         <div class="foot-brand">
@@ -847,6 +861,189 @@
       el.style.transitionDelay = (i % 4 * 0.07) + 's';
       io.observe(el);
     });
+  </script>
+
+  <!-- ===================== WebGL ARTIFACT ENGINE ===================== -->
+  <script>
+  (function () {
+    var canvases = Array.prototype.slice.call(document.querySelectorAll('canvas.fx, canvas.fx-fixed'));
+    if (!canvases.length) return;
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+    var mouse = { x: 0.5, y: 0.5, px: -1e4, py: -1e4 };
+    window.addEventListener('mousemove', function (e) {
+      mouse.x = e.clientX / innerWidth; mouse.y = e.clientY / innerHeight;
+      mouse.px = e.clientX; mouse.py = e.clientY;
+    }, { passive: true });
+
+    function compile(gl, type, src) {
+      var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+      return s;
+    }
+    function program(gl, vs, fs) {
+      var p = gl.createProgram();
+      gl.attachShader(p, compile(gl, gl.VERTEX_SHADER, vs));
+      gl.attachShader(p, compile(gl, gl.FRAGMENT_SHADER, fs));
+      gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+      return p;
+    }
+    function quad(gl) {
+      var b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      return b;
+    }
+
+    var NOISE = [
+      'float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}',
+      'float vn(vec2 p){vec2 i=floor(p),f=fract(p);float a=hash(i),b=hash(i+vec2(1.,0.)),c=hash(i+vec2(0.,1.)),d=hash(i+vec2(1.,1.));vec2 u=f*f*(3.-2.*f);return mix(a,b,u.x)+(c-a)*u.y*(1.-u.x)+(d-b)*u.x*u.y;}',
+      'float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*vn(p);p=p*2.+vec2(13.1,7.7);a*=.5;}return v;}'
+    ].join('\n');
+    var QUAD_VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+
+    var effects = {
+      mesh: function (c, gl) {
+        var fs = 'precision mediump float;uniform vec2 u_res;uniform float u_t;' + NOISE +
+          'void main(){vec2 uv=gl_FragCoord.xy/u_res.xy;uv.x*=u_res.x/u_res.y;float t=u_t*0.04;' +
+          'vec2 q=vec2(fbm(uv*1.4+t),fbm(uv*1.4+vec2(4.2,1.7)-t));' +
+          'float n=fbm(uv*1.8+q*1.6+t);' +
+          'vec3 paper=vec3(0.965,0.945,0.906),moss=vec3(0.247,0.612,0.427),clay=vec3(0.690,0.416,0.235);' +
+          'vec3 col=paper;col=mix(col,moss,smoothstep(0.35,0.85,n)*0.17);col=mix(col,clay,smoothstep(0.55,0.95,q.x)*0.13);' +
+          'gl_FragColor=vec4(col,1.0);}';
+        var p = program(gl, QUAD_VS, fs), b = quad(gl), a = gl.getAttribLocation(p, 'a');
+        var uR = gl.getUniformLocation(p, 'u_res'), uT = gl.getUniformLocation(p, 'u_t');
+        return { draw: function (t) {
+          gl.useProgram(p); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+          gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
+          gl.uniform2f(uR, c.width, c.height); gl.uniform1f(uT, t);
+          gl.drawArrays(gl.TRIANGLES, 0, 3);
+        } };
+      },
+      aurora: function (c, gl) {
+        var fs = 'precision mediump float;uniform vec2 u_res;uniform float u_t;' + NOISE +
+          'void main(){vec2 uv=gl_FragCoord.xy/u_res.xy;float t=u_t*0.06;vec3 col=vec3(0.);float al=0.;' +
+          'for(int i=0;i<4;i++){float fi=float(i);' +
+          'float yc=0.5+0.26*sin(uv.x*2.2+t*(1.0+fi*0.3)+fi*1.7)+0.10*fbm(vec2(uv.x*2.5+t,fi));' +
+          'float w=0.16+0.05*fi;float band=smoothstep(w,0.0,abs(uv.y-yc));' +
+          'band*=0.55+0.45*sin(uv.x*7.0+t*2.0+fi);' +
+          'vec3 cg=vec3(0.247,0.612,0.427),cgo=vec3(0.905,0.722,0.580);' +
+          'vec3 cc=mix(cg,cgo,fract(fi*0.4+0.2));col+=cc*band*0.5;al+=band*0.30;}' +
+          'al=clamp(al,0.,0.58);gl_FragColor=vec4(col,al);}';
+        var p = program(gl, QUAD_VS, fs), b = quad(gl), a = gl.getAttribLocation(p, 'a');
+        var uR = gl.getUniformLocation(p, 'u_res'), uT = gl.getUniformLocation(p, 'u_t');
+        return { draw: function (t) {
+          gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+          gl.useProgram(p); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+          gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
+          gl.uniform2f(uR, c.width, c.height); gl.uniform1f(uT, t);
+          gl.drawArrays(gl.TRIANGLES, 0, 3);
+        } };
+      },
+      leaves: function (c, gl) {
+        var N = Math.min(90, Math.floor((c.clientWidth * c.clientHeight) / 14000) + 22);
+        var s = new Float32Array(N * 4);
+        for (var i = 0; i < N; i++) { s[i*4]=Math.random(); s[i*4+1]=Math.random(); s[i*4+2]=Math.random()*6.28; s[i*4+3]=7+Math.random()*15; }
+        var b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, s, gl.STATIC_DRAW);
+        var vs = 'attribute vec4 s;uniform float u_t;uniform vec2 u_m;varying float v_a;varying float v_s;' +
+          'void main(){float d=0.4+0.6*fract(s.z*0.137);' +
+          'float x=fract(s.x+0.02*sin(u_t*0.3+s.z)+(u_m.x-0.5)*0.05*d);' +
+          'float y=fract(s.y-u_t*0.013*(0.4+d)+0.015*cos(u_t*0.5+s.z));' +
+          'gl_Position=vec4(vec2(x,1.0-y)*2.0-1.0,0.,1.);' +
+          'gl_PointSize=s.w*d*' + DPR.toFixed(2) + ';v_a=0.22+0.4*d;v_s=s.z;}';
+        var fs = 'precision mediump float;varying float v_a;varying float v_s;' +
+          'void main(){vec2 c=gl_PointCoord*2.0-1.0;float a=v_s;mat2 R=mat2(cos(a),-sin(a),sin(a),cos(a));vec2 p=R*c;' +
+          'float d=(p.x*p.x)/0.28+(p.y*p.y)/1.0;float leaf=1.0-smoothstep(0.7,1.0,d);if(leaf<0.02)discard;' +
+          'float rib=smoothstep(0.07,0.0,abs(p.x))*step(abs(p.y),0.9);' +
+          'vec3 g=vec3(0.247,0.612,0.427),cl=vec3(0.690,0.416,0.235);vec3 col=mix(g,cl,fract(v_s*0.5));' +
+          'col*=1.0-0.35*rib;gl_FragColor=vec4(col,leaf*v_a);}';
+        var p = program(gl, vs, fs), a = gl.getAttribLocation(p, 's');
+        var uT = gl.getUniformLocation(p, 'u_t'), uM = gl.getUniformLocation(p, 'u_m');
+        return { draw: function (t) {
+          gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+          gl.useProgram(p); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+          gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 4, gl.FLOAT, false, 0, 0);
+          gl.uniform1f(uT, t); gl.uniform2f(uM, mouse.x, mouse.y);
+          gl.drawArrays(gl.POINTS, 0, N);
+        } };
+      },
+      plexus: function (c, gl) {
+        var nodes = [];
+        function rebuild() {
+          var n = Math.min(64, Math.floor((c.clientWidth * c.clientHeight) / 16000) + 16); nodes = [];
+          for (var i = 0; i < n; i++) nodes.push({ x: Math.random()*c.clientWidth, y: Math.random()*c.clientHeight, vx:(Math.random()-0.5)*16, vy:(Math.random()-0.5)*16 });
+        }
+        rebuild();
+        var vs = 'attribute vec2 p;attribute float al;uniform vec2 u_res;varying float v;' +
+          'void main(){vec2 c=(p/u_res)*2.0-1.0;c.y=-c.y;gl_Position=vec4(c,0.,1.);gl_PointSize=' + (3*DPR).toFixed(2) + ';v=al;}';
+        var fs = 'precision mediump float;varying float v;uniform vec3 u_col;void main(){gl_FragColor=vec4(u_col,v);}';
+        var p = program(gl, vs, fs), a = gl.getAttribLocation(p, 'p'), aa = gl.getAttribLocation(p, 'al');
+        var uR = gl.getUniformLocation(p, 'u_res'), uC = gl.getUniformLocation(p, 'u_col');
+        var lb = gl.createBuffer(), pb = gl.createBuffer(), last = 0;
+        return {
+          resize: rebuild,
+          draw: function (t) {
+            var dt = Math.min(0.05, (t - last) || 0.016); last = t;
+            var W = c.clientWidth, H = c.clientHeight, r = c.getBoundingClientRect();
+            var mx = mouse.px - r.left, my = mouse.py - r.top;
+            for (var k = 0; k < nodes.length; k++) { var nd = nodes[k];
+              nd.x += nd.vx*dt; nd.y += nd.vy*dt;
+              if (nd.x<0||nd.x>W) nd.vx*=-1; if (nd.y<0||nd.y>H) nd.vy*=-1;
+              nd.x=Math.max(0,Math.min(W,nd.x)); nd.y=Math.max(0,Math.min(H,nd.y));
+            }
+            var all = nodes.slice(); if (mx>=0&&mx<=W&&my>=0&&my<=H) all.push({x:mx,y:my});
+            var D=130, lines=[], pts=[];
+            for (var i=0;i<all.length;i++){ pts.push(all[i].x,all[i].y,0.9);
+              for (var j=i+1;j<all.length;j++){ var dx=all[i].x-all[j].x, dy=all[i].y-all[j].y, dd=Math.sqrt(dx*dx+dy*dy);
+                if (dd<D){ var v=(1-dd/D)*0.5; lines.push(all[i].x,all[i].y,v,all[j].x,all[j].y,v); } } }
+            gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.useProgram(p); gl.uniform2f(uR, W, H); gl.uniform3f(uC, 0.078, 0.341, 0.235);
+            gl.bindBuffer(gl.ARRAY_BUFFER, lb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lines), gl.DYNAMIC_DRAW);
+            gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a,2,gl.FLOAT,false,12,0);
+            gl.enableVertexAttribArray(aa); gl.vertexAttribPointer(aa,1,gl.FLOAT,false,12,8);
+            gl.drawArrays(gl.LINES, 0, lines.length/3);
+            gl.bindBuffer(gl.ARRAY_BUFFER, pb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pts), gl.DYNAMIC_DRAW);
+            gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a,2,gl.FLOAT,false,12,0);
+            gl.enableVertexAttribArray(aa); gl.vertexAttribPointer(aa,1,gl.FLOAT,false,12,8);
+            gl.drawArrays(gl.POINTS, 0, pts.length/3);
+          }
+        };
+      }
+    };
+
+    var scale = { mesh: 0.55, aurora: 0.85 };
+    var insts = [];
+    for (var ci = 0; ci < canvases.length; ci++) {
+      (function (c) {
+        var kind = c.getAttribute('data-fx'), fac = effects[kind]; if (!fac) return;
+        var gl; try { gl = c.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: true, depth: false }); } catch (e) {}
+        if (!gl) { c.parentNode && c.parentNode.removeChild(c); return; }
+        var eff; try { eff = fac(c, gl); } catch (e) { if (window.console) console.warn('fx ' + kind, e); c.parentNode && c.parentNode.removeChild(c); return; }
+        var inst = { c: c, gl: gl, eff: eff, sc: scale[kind] || DPR, visible: c.classList.contains('fx-fixed') };
+        inst.resize = function () {
+          var w = Math.max(1, Math.floor(c.clientWidth * inst.sc)), h = Math.max(1, Math.floor(c.clientHeight * inst.sc));
+          if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+          gl.viewport(0, 0, c.width, c.height); if (eff.resize) eff.resize();
+        };
+        inst.resize(); insts.push(inst);
+        if (!c.classList.contains('fx-fixed')) {
+          new IntersectionObserver(function (es) { es.forEach(function (e) { inst.visible = e.isIntersecting; }); }, { rootMargin: '80px' }).observe(c);
+        }
+      })(canvases[ci]);
+    }
+    if (!insts.length) return;
+    var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { insts.forEach(function (i) { i.resize(); }); }, 150); }, { passive: true });
+
+    function render(i, t) { i.gl.clearColor(0, 0, 0, 0); i.gl.clear(i.gl.COLOR_BUFFER_BIT); try { i.eff.draw(t); } catch (e) {} }
+
+    if (reduce) { insts.forEach(function (i) { render(i, 0); }); return; }
+    var t0 = performance.now();
+    (function frame(now) {
+      var t = (now - t0) / 1000;
+      for (var k = 0; k < insts.length; k++) if (insts[k].visible) render(insts[k], t);
+      requestAnimationFrame(frame);
+    })(t0);
+  })();
   </script>
 </body>
 </html>
