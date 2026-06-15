@@ -219,16 +219,52 @@
     .nav-cta { display: flex; align-items: center; gap: 12px; }
 
     /* ===================== HERO ===================== */
-    .hero { padding: 84px 0 60px; position: relative; }
-    .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
-    .hero h1 {
-      font-size: clamp(40px, 6vw, 68px); line-height: 1.02; margin: 22px 0 22px; max-width: 16ch; font-weight: 600;
+    .hero { padding: 26px 0 64px; position: relative; }
+    .hero-panel {
+      position: relative; overflow: hidden; isolation: isolate;
+      border-radius: 34px; padding: 78px 60px; background: #0a2c1e;
+      box-shadow: var(--shadow-lg); color: #e7f0ea;
     }
-    .hero p.lead { font-size: clamp(17px, 1.5vw, 19.5px); color: var(--ink-2); max-width: 52ch; margin-bottom: 32px; }
+    /* hairline glow border */
+    .hero-panel { border: 1px solid rgba(124,224,168,.14); }
+    /* scrim so text stays legible over the live mesh */
+    .hero-panel::after {
+      content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background: linear-gradient(102deg, rgba(6,26,17,.80) 0%, rgba(6,26,17,.42) 44%, rgba(6,26,17,0) 78%);
+    }
+    .hero-panel .fx { z-index: 0; border-radius: 0; }
+    .hero-inner {
+      position: relative; z-index: 2;
+      display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center;
+    }
+    .hero h1 { font-size: clamp(40px, 6vw, 68px); line-height: 1.02; margin: 22px 0 22px; max-width: 16ch; font-weight: 600; color: #fbf7ee; }
+    .hero p.lead { font-size: clamp(17px, 1.5vw, 19.5px); color: #cbe0d3; max-width: 52ch; margin-bottom: 32px; }
+    .hero p.lead strong { color: #eef6ef; }
+    .hero .accent { color: #ecc39c; }
+    /* lively shimmer sweep across the accent word */
+    .hero h1 .accent {
+      background: linear-gradient(100deg, #ecc39c 30%, #fff2df 50%, #ecc39c 70%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      background-size: 220% 100%; animation: shimmer 5s linear infinite;
+    }
+    @keyframes shimmer { to { background-position: -220% 0; } }
     .hero .cta { display: flex; gap: 14px; flex-wrap: wrap; }
-    .hero .trust { margin-top: 30px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; font-size: 13.5px; color: var(--muted); }
-    .hero .trust b { color: var(--bark); font-weight: 600; }
-    .trust .sep { width: 4px; height: 4px; border-radius: 50%; background: var(--clay-2); }
+    .hero .eyebrow { color: #c6ecd5; background: rgba(255,255,255,.08); border-color: rgba(198,236,213,.32); }
+    .hero .eyebrow .pulse { background: #7ce0a8; box-shadow: 0 0 0 4px rgba(124,224,168,.22); }
+    .hero .btn-primary {
+      background: linear-gradient(100deg, #ecc39c, #e7a978); background-size: 200% 100%;
+      color: #1c2a1c; box-shadow: 0 12px 30px -10px rgba(0,0,0,.55); animation: ctaflow 6s ease infinite;
+    }
+    @keyframes ctaflow { 0%,100%{background-position:0 0} 50%{background-position:100% 0} }
+    .hero .btn-primary:hover { background-image: linear-gradient(100deg, #f3d3b3, #eeb98c); transform: translateY(-2px) scale(1.015); }
+    .hero .btn-ghost { color: #f0f6f0; border-color: rgba(255,255,255,.4); background: rgba(255,255,255,.04); }
+    .hero .btn-ghost:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.55); }
+    .hero .trust { margin-top: 30px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; font-size: 13.5px; color: #a7c2b2; }
+    .hero .trust b { color: #f0f6f0; font-weight: 600; }
+    .trust .sep { width: 4px; height: 4px; border-radius: 50%; background: #ecc39c; }
+    /* device lifts and tilts to feel alive */
+    .hero .device { transition: transform .5s cubic-bezier(.2,.7,.2,1); will-change: transform; }
+    .hero .device:hover { transform: translateY(-6px) rotateZ(-.4deg); }
 
     /* staggered reveal */
     .reveal-up { opacity: 0; transform: translateY(18px); animation: revealUp .8s cubic-bezier(.2,.7,.2,1) forwards; }
@@ -401,7 +437,8 @@
 
     /* ===================== RESPONSIVE ===================== */
     @media (max-width: 920px) {
-      .hero-grid, .split { grid-template-columns: 1fr; gap: 44px; }
+      .hero-inner, .split { grid-template-columns: 1fr; gap: 44px; }
+      .hero-panel { padding: 48px 32px; border-radius: 26px; }
       .hero .device { max-width: 460px; }
       .ind-grid, .cap-grid, .why-grid, .stats, .prod-grid, .foot-grid { grid-template-columns: repeat(2,1fr); }
       .nav-links { display: none; }
@@ -411,6 +448,8 @@
       .kpis { grid-template-columns: repeat(3,1fr); }
       .cap-section, .cta-band { margin: 0 14px; border-radius: 24px; }
       .cta-band { padding: 44px 26px; }
+      .hero { padding: 14px 0 48px; }
+      .hero-panel { padding: 38px 22px; border-radius: 22px; }
       section.block { padding: 64px 0; }
       .nav-cta .btn-ghost { display: none; }
       .float-badge { display: none; }
@@ -454,8 +493,11 @@
   <main id="top">
     <!-- ===================== HERO ===================== -->
     <section class="hero">
-      <canvas class="fx" data-fx="leaves" aria-hidden="true"></canvas>
-      <div class="wrap hero-grid">
+      <div class="wrap">
+        <div class="hero-panel">
+          <canvas class="fx" data-fx="heromesh" aria-hidden="true"></canvas>
+          <canvas class="fx" data-fx="leaves" aria-hidden="true"></canvas>
+          <div class="hero-inner">
         <div>
           <span class="eyebrow reveal-up d1"><span class="pulse"></span>Cloud business software · Made in Kenya 🇰🇪</span>
           <h1 class="reveal-up d2">Run your whole business from <span class="accent">one screen.</span></h1>
@@ -536,6 +578,8 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 3v18h18" stroke-linecap="round"/><path d="M7 14l4-4 3 3 5-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             Sales up<small>+12% vs last week</small>
+          </div>
+        </div>
           </div>
         </div>
       </div>
@@ -920,6 +964,31 @@
           gl.drawArrays(gl.TRIANGLES, 0, 3);
         } };
       },
+      heromesh: function (c, gl) {
+        var fs = '#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n' +
+          'uniform vec2 u_res;uniform float u_t;uniform vec2 u_m;' + NOISE +
+          'void main(){vec2 uv=gl_FragCoord.xy/u_res.xy;vec2 p=uv;p.x*=u_res.x/u_res.y;' +
+          'float t=u_t*0.085;vec2 m=u_m;m.x*=u_res.x/u_res.y;' +
+          'vec2 q=vec2(fbm(p*1.2+t*0.6),fbm(p*1.2+vec2(3.1,1.7)-t*0.5));' +
+          'vec2 r=vec2(fbm(p*1.6+q*1.8+(p-m)*0.22+t*0.4),fbm(p*1.6+q*1.8+vec2(8.3,2.8)-t*0.3));' +
+          'float n=fbm(p*1.4+r*1.6);float n2=fbm(p*2.6+r*1.0-t*0.7);' +
+          'vec3 c0=vec3(0.024,0.133,0.090),c1=vec3(0.110,0.431,0.294),c2=vec3(0.247,0.612,0.427),c3=vec3(0.690,0.416,0.235),c4=vec3(0.918,0.745,0.604);' +
+          'vec3 col=c0;col=mix(col,c1,smoothstep(0.16,0.70,n));col=mix(col,c2,smoothstep(0.45,0.90,r.x)*0.78);' +
+          'col=mix(col,c3,smoothstep(0.55,0.93,q.y)*0.35);col=mix(col,c4,smoothstep(0.80,0.99,n2)*0.55*(0.7+0.3*sin(u_t*0.7)));' +
+          'float sheen=pow(smoothstep(0.62,1.0,n2),3.0)*0.5*(0.6+0.4*sin(u_t*0.9+p.x*3.0));col+=sheen*vec3(1.0,0.92,0.74);' +
+          'float iso=abs(fract(n*5.0)-0.5);col+=(1.0-smoothstep(0.0,0.045,iso))*0.06*vec3(0.95,0.84,0.66);' +
+          'float vig=smoothstep(1.30,0.25,length(uv-0.5)*1.35);col*=0.58+0.42*vig;' +
+          'col+=(hash(gl_FragCoord.xy*1.7+u_t)-0.5)*0.028;' +
+          'gl_FragColor=vec4(max(col,0.0),1.0);}';
+        var p = program(gl, QUAD_VS, fs), b = quad(gl), a = gl.getAttribLocation(p, 'a');
+        var uR = gl.getUniformLocation(p, 'u_res'), uT = gl.getUniformLocation(p, 'u_t'), uM = gl.getUniformLocation(p, 'u_m');
+        return { draw: function (t) {
+          gl.useProgram(p); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+          gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
+          gl.uniform2f(uR, c.width, c.height); gl.uniform1f(uT, t); gl.uniform2f(uM, mouse.x, mouse.y);
+          gl.drawArrays(gl.TRIANGLES, 0, 3);
+        } };
+      },
       aurora: function (c, gl) {
         var fs = 'precision mediump float;uniform vec2 u_res;uniform float u_t;' + NOISE +
           'void main(){vec2 uv=gl_FragCoord.xy/u_res.xy;float t=u_t*0.06;vec3 col=vec3(0.);float al=0.;' +
@@ -947,8 +1016,8 @@
         var b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, s, gl.STATIC_DRAW);
         var vs = 'attribute vec4 s;uniform float u_t;uniform vec2 u_m;varying float v_a;varying float v_s;' +
           'void main(){float d=0.4+0.6*fract(s.z*0.137);' +
-          'float x=fract(s.x+0.02*sin(u_t*0.3+s.z)+(u_m.x-0.5)*0.05*d);' +
-          'float y=fract(s.y-u_t*0.013*(0.4+d)+0.015*cos(u_t*0.5+s.z));' +
+          'float x=fract(s.x+0.028*sin(u_t*0.5+s.z)+(u_m.x-0.5)*0.06*d);' +
+          'float y=fract(s.y-u_t*0.019*(0.4+d)+0.02*cos(u_t*0.7+s.z));' +
           'gl_Position=vec4(vec2(x,1.0-y)*2.0-1.0,0.,1.);' +
           'gl_PointSize=s.w*d*' + DPR.toFixed(2) + ';v_a=0.22+0.4*d;v_s=s.z;}';
         var fs = 'precision mediump float;varying float v_a;varying float v_s;' +
@@ -1011,11 +1080,12 @@
       }
     };
 
-    var scale = { mesh: 0.55, aurora: 0.85 };
+    var scale = { mesh: 0.55, aurora: 0.85, heromesh: 0.72 };
     var insts = [];
     for (var ci = 0; ci < canvases.length; ci++) {
       (function (c) {
         var kind = c.getAttribute('data-fx'), fac = effects[kind]; if (!fac) return;
+        if (kind === 'heromesh' && window.innerWidth < 560) { c.parentNode && c.parentNode.removeChild(c); return; }
         var gl; try { gl = c.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: true, depth: false }); } catch (e) {}
         if (!gl) { c.parentNode && c.parentNode.removeChild(c); return; }
         var eff; try { eff = fac(c, gl); } catch (e) { if (window.console) console.warn('fx ' + kind, e); c.parentNode && c.parentNode.removeChild(c); return; }
