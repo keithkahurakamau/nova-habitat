@@ -1,22 +1,34 @@
 # Nova-Habitat Technologies — Company landing site
 
 ## What this is
-A single, self-contained static landing page for **Nova-Habitat Technologies**, the
-company behind **MediFleet** (a clinical-grade hospital management platform).
+A single, self-contained static landing page for **Nova-Habitat Technologies** — a
+Kenyan SaaS company providing cloud **POS and analytics** software for schools,
+hospitals, hotels, restaurants and supermarkets (M-Pesa + KRA eTIMS, multi-branch).
+**MediFleet** (clinical-grade hospital platform) is the first live product.
 
-- **Everything lives in `index.html`** — markup, CSS (in a `<style>` block), and the
-  one line of JS (footer year). No build step, no dependencies, no framework.
+- **The site lives in `index.html`** — markup, CSS (in a `<style>` block), and a small
+  inline JS (footer year + scroll-reveal IntersectionObserver). No build step, no
+  dependencies, no framework.
+- Brand assets: `logo.svg` (lockup), `logo-mark.svg` (icon), `favicon.svg`,
+  `og-cover.svg` (1200×630 social image).
+- SEO: `robots.txt`, `sitemap.xml`, plus geo meta + JSON-LD inside `index.html`.
 - `vercel.json` — `cleanUrls` + a catch-all rewrite to `/index.html`.
-- Deploys to Vercel (or any static host: GitHub Pages, Netlify).
+- **Hosted on GitHub Pages** (`main` root, auto-deploys on push). Also Vercel-ready.
 
 ## Working in this repo
 - Edit `index.html` directly. Keep it a single file — do not introduce a build
   pipeline, bundler, or external CSS/JS files unless explicitly asked.
-- Design tokens are CSS custom properties in `:root` (`--bg`, `--ink`, `--brand`,
-  etc.). Reuse them rather than hardcoding colors.
-- Match the existing style: `Inter` font, dark theme, `.wrap` max-width container,
-  `.btn`/`.btn-primary`/`.btn-ghost` button classes, `.product` cards.
-- Keep it accessible and responsive (there's a mobile breakpoint at `640px`).
+- **Design system:** earthy theme — forest green (`--forest`/`--moss`) + clay brown
+  (`--clay`) on warm paper (`--paper`), with a grain overlay. Fonts: **Fraunces**
+  (display/headings) + **Hanken Grotesk** (body) — do NOT use Inter/Roboto.
+  All tokens are CSS custom properties in `:root`; reuse them, don't hardcode colors.
+- Reuse existing classes: `.wrap` container, `.btn`/`.btn-primary`/`.btn-ghost`/
+  `.btn-clay`, `.eyebrow`, `.obs` (scroll-reveal), `.ind`/`.cap`/`.prod` cards.
+- The brand mark is a leaf + four-point "nova" spark + clay stem. Keep header/footer
+  inline marks in sync with `logo.svg` if you change it.
+- Keep it accessible and responsive (breakpoints at `920px` and `600px`;
+  `prefers-reduced-motion` is honored).
+- SEO/canonical/OG use `https://nova-habitat.tech/` (the brand domain, not yet live).
 
 ## Preview locally
 ```bash
