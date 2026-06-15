@@ -1,0 +1,24 @@
+<svg width="340" height="84" viewBox="0 0 340 84" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nova-Habitat Technologies">
+  <defs>
+    <linearGradient id="ltile" x1="8" y1="8" x2="76" y2="76" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1c6e4b"/><stop offset="1" stop-color="#0f4630"/>
+    </linearGradient>
+    <linearGradient id="lleaf" x1="30" y1="22" x2="56" y2="66" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#bfe7cf"/><stop offset="1" stop-color="#5fbd8a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- mark -->
+  <g transform="translate(8,10)">
+    <rect width="64" height="64" rx="16" fill="url(#ltile)"/>
+    <path d="M32 14c11 7 12 25 0 38-12-13-11-31 0-38z" fill="url(#lleaf)"/>
+    <path d="M32 18c-2 9-3 18-4 27" stroke="#0f4630" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+    <path d="M31 26l5-3M30.5 33l5.5-3.5M30 40l5-3" stroke="#0f4630" stroke-width="1.5" stroke-linecap="round" opacity=".4"/>
+    <path d="M28 50c1-2.6 2.2-4.6 4-6" stroke="#b06a3c" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M32 5l1.6 4.2L38 11l-4.4 1.6L32 17l-1.6-4.4L26 11l4.4-1.6L32 5z" fill="#e7b894"/>
+  </g>
+
+  <!-- wordmark -->
+  <text x="88" y="42" font-family="'Fraunces', Georgia, 'Times New Roman', serif" font-size="30" font-weight="600" letter-spacing="-0.5" fill="#23302a">Nova-Habitat</text>
+  <text x="89" y="62" font-family="'Hanken Grotesk', Arial, sans-serif" font-size="11.5" font-weight="600" letter-spacing="3.4" fill="#6b766d">TECHNOLOGIES</text>
+</svg>
